@@ -1,7 +1,0 @@
-aiortc==1.10.1
-aioice==0.9.0
-av==12.3.0
-opencv-python==4.9.0.80
-pyinstaller==6.4.0
-numpy<2
-PyAudio==0.2.14
