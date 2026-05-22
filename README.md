@@ -1,15 +1,20 @@
-markdown_content = """# Hostel-Net: P2P Serverless WebRTC
+# Serverless P2P Communication Platform
 
-Hostel-Net is a high-speed, serverless Peer-to-Peer (P2P) communication tool designed for local area networks (LAN) and routed college networks. It leverages **WebRTC** to provide ultra-low latency text messaging, file sharing, and video conferencing without the need for external STUN/TURN servers or internet connectivity.
+A serverless Peer-to-Peer (P2P) communication platform designed specifically for campus, hostel, and local routing networks. It enables real-time video, audio, text chat, and file transfers between two hosts without relying on centralized messaging servers, leveraging local network routing for ultra-low latency.
 
-## 🚀 Features
+## Features
 
-- **Serverless Discovery:** Uses direct TCP signaling for the initial handshake—no central server required.
-- **Asynchronous Chat:** Terminal-based UI that allows typing and receiving messages simultaneously without blocking.
-- **Reliable File Sharing:** Automatically chunks large files (16KB packets) over WebRTC DataChannels for high-speed local transfer.
-- **Low-Latency Video:** Utilizes OpenCV with hardware buffer optimizations (zero-queueing) for real-time video streaming.
-- **Cross-Platform:** Works on Windows, macOS, and Linux.
+* **Serverless Architecture:** Utilizes direct TCP signaling (Port 50001) to establish connections directly between IP addresses. No central messaging server required.
+* **Real-Time Media:** Hardware-accelerated video (OpenCV) and low-latency audio (PyAudio) powered by WebRTC (`aiortc`).
+* **Data Channels:** Instant text messaging and direct file transfers over secure UDP data channels.
+* **Firewall & DPI Resilient:** Designed to work bare-metal on open subnets (Ethernet) with automatic TURN server fallback to bypass Deep Packet Inspection (DPI) and UDP blockades on strict enterprise Wi-Fi controllers.
+* **Clean Terminal UI:** Non-blocking asynchronous command-line interface.
 
----
-
-## 📂 Project Structure
+## User Interface 
+```text
+[SYSTEM] Connected! Type to chat. Use '/file <path>' to send files.
+--------------------------------------------------
+Host A: Hey, is the network project done?
+> 
+Host B: Yes, just testing the audio stream now.
+>
