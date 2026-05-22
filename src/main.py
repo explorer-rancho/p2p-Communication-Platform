@@ -3,13 +3,17 @@ import asyncio
 from network.webrtc import HostelNode
 from network.signaling import host_signaling_server, client_signaling
 from features.chat import chat_loop
+from av import logging as av_logging
+
+av_logging.set_level(av_logging.ERROR)
 
 PORT = 50001
 
-async def start_host():
-    node = HostelNode()
+# Add the use_video and use_audio parameters with defaults
+async def start_host(use_video=False, use_audio=False):
+    # Pass the flags down to the node
+    node = HostelNode(use_video=use_video, use_audio=use_audio)
     
-    # Host B waits for Host A to create the channel, so we listen for it
     @node.pc.on("datachannel")
     def on_datachannel(channel):
         node.setup_data_channel(channel)
@@ -17,10 +21,11 @@ async def start_host():
         
     await host_signaling_server(PORT, node.pc)
 
-async def start_client(target_ip):
-    node = HostelNode()
+# Add the parameters here as well
+async def start_client(target_ip, use_video=False, use_audio=False):
+    # Pass the flags down to the node
+    node = HostelNode(use_video=use_video, use_audio=use_audio)
     
-    # Host A creates the data channel
     channel = node.pc.createDataChannel("chat_and_files")
     node.setup_data_channel(channel)
     
@@ -33,12 +38,15 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Hostel-Net P2P WebRTC")
     parser.add_argument("--listen", action="store_true", help="Listen for connections (Host B)")
     parser.add_argument("--target", type=str, help="IP to connect to (Host A)")
+    parser.add_argument("--video", action="store_true", help="Enable webcam video sharing")
+    parser.add_argument("--audio", action="store_true", help="Enable microphone audio sharing")
     
     args = parser.parse_args()
     
     if args.listen:
-        asyncio.run(start_host())
+        asyncio.run(start_host(use_video = args.video, use_audio=args.audio))
     elif args.target:
-        asyncio.run(start_client(args.target))
+        # Pass both flags
+        asyncio.run(start_client(args.target, use_video=args.video, use_audio=args.audio))
     else:
         print("Usage: python src/main.py --listen OR python src/main.py --target <IP>")

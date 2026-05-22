@@ -1,6 +1,14 @@
 import asyncio
 import json
+import sys
 from aiortc import RTCSessionDescription
+
+# --- FIX 1: Non-blocking input function ---
+async def async_input(prompt_text):
+    loop = asyncio.get_event_loop()
+    sys.stdout.write(prompt_text)
+    sys.stdout.flush()
+    return await loop.run_in_executor(None, sys.stdin.readline)
 
 async def host_signaling_server(port, pc):
     """Host B listens for Host A's connection request."""
@@ -13,7 +21,9 @@ async def host_signaling_server(port, pc):
         data = await reader.read(1024)
         if json.loads(data.decode()).get("type") == "handshake":
             print(f"\n[ALERT] Connection request from {addr[0]}.")
-            ans = input("Accept? (y/n): ") # Blocking is okay here before WebRTC starts
+            
+            # --- FIX 1 APPLIED: Don't freeze the event loop ---
+            ans = await async_input("Accept? (y/n): ") 
             
             if ans.strip().lower() != 'y':
                 writer.write(json.dumps({"type": "reject"}).encode())
@@ -26,7 +36,8 @@ async def host_signaling_server(port, pc):
             await writer.drain()
 
             # 3. Receive Offer
-            data = await reader.read(4096)
+            # --- FIX 2 APPLIED: Increased buffer to 64KB for Audio+Video SDP ---
+            data = await reader.read(65536) 
             offer_dict = json.loads(data.decode())
             await pc.setRemoteDescription(RTCSessionDescription(sdp=offer_dict["sdp"], type=offer_dict["type"]))
 
@@ -65,7 +76,8 @@ async def client_signaling(target_ip, port, pc):
     await writer.drain()
 
     # 4. Receive Answer
-    data = await reader.read(4096)
+    # --- FIX 2 APPLIED: Increased buffer to 64KB for Audio+Video SDP ---
+    data = await reader.read(65536)
     answer_dict = json.loads(data.decode())
     await pc.setRemoteDescription(RTCSessionDescription(sdp=answer_dict["sdp"], type=answer_dict["type"]))
     
